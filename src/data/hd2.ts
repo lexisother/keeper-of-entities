@@ -77,6 +77,7 @@ export const def_effect_types: Record<number, string> = {
   91: "game_StratGroupCooldown",  // mission_helldiver_stratagem_group_cooldown_modified
   92: "war_Demilitarized",        // prevents attacks against this planet
   93: "game_OperationModToggle",  // game_operation_modifier_toggle
+  94: "game_ModifierEffect"       // applies modifiers from generated_modifier_settings
 }
 
 // prettier-ignore
