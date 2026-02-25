@@ -35,6 +35,13 @@ export function formatTable(rows: string[][]): string {
     ).join("\n")}`;
 }
 
+export const formatEmptyString = <T>(data: T): T | string =>
+    typeof data === "string"
+        ? data === ""
+            ? "<empty string>"
+            : data
+        : data;
+
 export interface DiffResult<T> {
     additions: T[],
     removals: T[],

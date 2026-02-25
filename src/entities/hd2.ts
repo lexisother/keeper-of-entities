@@ -1,11 +1,14 @@
 import * as discord from "discord.js";
 import { CCBot, CCBotEntity } from "../ccbot";
-import { diffArrays, getJSON } from "../utils";
+import { diffArrays, formatEmptyString, getJSON } from "../utils";
 import { WatcherEntity, WatcherEntityData } from "../watchers";
 import {
   APIGalacticWarEffect,
+  APIGameClient,
   APIStatus,
   ApiType,
+  GameClientFeature,
+  GameClientOnlineOverride,
   def_effect_types,
   def_effect_value_types,
 } from "../data/hd2";
@@ -30,6 +33,7 @@ interface HD2TrackerEntityData extends WatcherEntityData {
   colour: string;
 
   effects?: APIGalacticWarEffect[];
+  gameClient: APIGameClient;
   storyBeatId32?: number;
 }
 
@@ -39,7 +43,7 @@ class HD2TrackerEntity extends WatcherEntity {
   public apiType: ApiType;
   public warId: string;
   public colour: string;
-  public data: Pick<HD2TrackerEntityData, "effects" | "storyBeatId32">;
+  public data: Pick<HD2TrackerEntityData, "effects" | "gameClient" | "storyBeatId32">;
 
   public constructor(
     c: CCBot,
@@ -59,6 +63,7 @@ class HD2TrackerEntity extends WatcherEntity {
 
     this.data = {
       effects: data.effects ?? [],
+      gameClient: data.gameClient ?? { featureConfiguration: [], onlineOverrideConfiguration: [] },
       storyBeatId32: data.storyBeatId32 ?? 0,
     };
   }
@@ -80,6 +85,12 @@ class HD2TrackerEntity extends WatcherEntity {
           this.handleStatus(res as APIStatus);
           break;
         }
+        case "gameClient": {
+          const gameClient = res as APIGameClient;
+          this.handleGameClientFeatureConfigs(gameClient.featureConfiguration);
+          this.handleGameClientOnlineOverrides(gameClient.onlineOverrideConfiguration);
+          break;
+        }
       }
     }
 
@@ -96,6 +107,7 @@ class HD2TrackerEntity extends WatcherEntity {
       colour: this.colour,
 
       effects: this.data.effects,
+      gameClient: this.data.gameClient,
       storyBeatId32: this.data.storyBeatId32,
     });
   }
@@ -121,7 +133,8 @@ class HD2TrackerEntity extends WatcherEntity {
 
     for (const change of diff.changes) {
       const embed = this.constructEffectEmbed("changed", change.after);
-      const changeEmbed = this.constructEffectChangesEmbed(
+      const changeEmbed = this.constructChangesEmbed(
+        'Effect Changes',
         change.before,
         change.after
       );
@@ -150,6 +163,67 @@ class HD2TrackerEntity extends WatcherEntity {
     });
 
     this.data.storyBeatId32 = status.storyBeatId32;
+  }
+
+  private handleGameClientFeatureConfigs(data: APIGameClient['featureConfiguration']): void {
+    const oldFeatureConfiguration = this.data.gameClient.featureConfiguration;
+    if (oldFeatureConfiguration.length === 0) {
+      this.data.gameClient.featureConfiguration = data;
+      return;
+    }
+
+    const diff = diffArrays<GameClientFeature>(oldFeatureConfiguration, data, 'id32');
+
+    for (const addition of diff.additions) {
+      const embed = this.constructGenericObjectEmbed('GameClient feature', 'added', addition);
+      this.channel.send({ embeds: [embed] });
+    }
+    for (const removal of diff.removals) {
+      const embed = this.constructGenericObjectEmbed('GameClient feature', 'removed', removal);
+      this.channel.send({ embeds: [embed] });
+    }
+    for (const change of diff.changes) {
+      const embed = this.constructGenericObjectEmbed('GameClient feature', 'changed', change.after);
+      const changeEmbed = this.constructChangesEmbed(
+        'Feature Changes',
+        change.before,
+        change.after
+      );
+
+      this.channel.send({ embeds: [embed, changeEmbed] });
+    }
+
+    this.data.gameClient.featureConfiguration = data;
+  }
+
+  private handleGameClientOnlineOverrides(data: APIGameClient['onlineOverrideConfiguration']): void {
+    const oldOnlineOverrides = this.data.gameClient.onlineOverrideConfiguration;
+    if (oldOnlineOverrides.length === 0) {
+      this.data.gameClient.onlineOverrideConfiguration = data;
+      return;
+    }
+
+    const diff = diffArrays<GameClientOnlineOverride>(oldOnlineOverrides, data);
+
+    for (const addition of diff.additions) {
+      const embed = this.constructGenericObjectEmbed('GameClient override', 'added', addition);
+      this.channel.send({ embeds: [embed] });
+    }
+    for (const removal of diff.removals) {
+      const embed = this.constructGenericObjectEmbed('GameClient override', 'removed', removal);
+      this.channel.send({ embeds: [embed] });
+    }
+    for (const change of diff.changes) {
+      const embed = this.constructGenericObjectEmbed('GameClient override', 'changed', change.after);
+      const changeEmbed = this.constructChangesEmbed(
+        'Override Changes',
+        change.before,
+        change.after
+      );
+      this.channel.send({ embeds: [embed, changeEmbed] });
+    }
+
+    this.data.gameClient.onlineOverrideConfiguration = data;
   }
 
   private constructEffectEmbed(
@@ -199,21 +273,47 @@ class HD2TrackerEntity extends WatcherEntity {
       );
   }
 
-  private constructEffectChangesEmbed(
-    before: APIGalacticWarEffect,
-    after: APIGalacticWarEffect
+  private constructGenericObjectEmbed<T extends object>(
+    ffor: string,
+    type: 'added' | 'changed' | 'removed',
+    data: T
   ): discord.EmbedBuilder {
+    const fields: discord.APIEmbedField[] = Object.entries(data)
+      .map(([key, value]) => ({
+        name: `\`${key}\``,
+        value: `\`${formatEmptyString(value)}\``,
+        inline: true
+      }));
+
+    return new discord.EmbedBuilder()
+      .setAuthor({
+        name: `${ffor} ${type} on ${this.apiType}`,
+        iconURL: colourApiUrl(this.colour)
+      })
+      .addFields([
+        ...fields
+      ])
+      .setColor(
+        type === "added"
+          ? COLOURS.added
+          : type === "changed"
+          ? COLOURS.changed
+          : COLOURS.removed
+      );
+  }
+
+  private constructChangesEmbed<T extends object & {[key: string]: unknown}>(title: string, before: T, after: T): discord.EmbedBuilder {
     const embed = new discord.EmbedBuilder()
-      .setAuthor({ name: "Effect Changes" })
-      .setColor("#E0A313");
+      .setAuthor({ name: title })
+      .setColor('#E0A313');
 
     for (const key of Object.keys(before)) {
       if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
         embed.addFields({
           name: key,
-          value: `\`${before[key]}\` → \`${after[key]}\``,
+          value: `\`${formatEmptyString(before[key])}\` → \`${formatEmptyString(after[key])}\``,
           inline: true,
-        });
+        })
       }
     }
 
@@ -224,6 +324,7 @@ class HD2TrackerEntity extends WatcherEntity {
     return {
       effects: () => `${this.baseUrl}/api/WarSeason/GalacticWarEffects`,
       status: (warId) => `${this.baseUrl}/api/WarSeason/${warId}/Status`,
+      gameClient: () => `${this.baseUrl}/api/Configuration/GameClient`,
     };
   }
 }

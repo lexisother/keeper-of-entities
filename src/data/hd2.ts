@@ -21,6 +21,30 @@ export interface APIStatus {
   storyBeatId32: number;
 }
 
+export enum OnlineOverrideDataType {
+  STRING = 0,
+  NUMBER = 5,
+  BOOLEAN = 7
+} 
+export interface GameClientFeature {
+  id32: number;
+  enabled: boolean;
+  data: string;
+  probability: number;
+  peerSync: boolean;
+  [key: string]: unknown;
+}
+export interface GameClientOnlineOverride extends GameClientFeature {
+  mixId: number;
+  parentMixId?: number;
+  dataType: OnlineOverrideDataType;
+  [key: string]: unknown;
+}
+export interface APIGameClient {
+  featureConfiguration: GameClientFeature[];
+  onlineOverrideConfiguration: GameClientOnlineOverride[];
+}
+
 // prettier-ignore
 export const def_effect_types: Record<number, string> = {
    1: "war_LibMultiplier",        // applies a liberation multiplier
@@ -36,7 +60,7 @@ export const def_effect_types: Record<number, string> = {
   40: "game_EnemyDivision",       // adds a special enemy to missions
   // 43
   // 44
-  45: "unk_AdditionalPayout",     // 45: "ADDITIONAL PAYOUT"
+  45: "UNK_AdditionalPayout",     // 45: "ADDITIONAL PAYOUT"
   // 46
   47: "war_ImpenetrableDefense",  // ? "IMPENETRABLE DEFENSE" The defenses of this planet are so strong that no enemy will be able to invade.
   48: "war_CrippledAttackSupply", // ? "CRIPPLED SUPPLY" The ability of this planet to attack is crippled.
@@ -50,8 +74,8 @@ export const def_effect_types: Record<number, string> = {
   60: "game_PayoutStandardized",  // mission_payout_standardized
   61: "game_StimsStartAmount",    // applies change in starting stims amount
   63: "game_StimsPickupAmount",   // changes Health&Supply Box pickups, val1 changes number of stims recovered
-  67: "unk_MarketPriceMult",      // "MARKET CRASH" Due to the risk of Famine, the market is concerned and prices have gone up 100%.
-  68: "unk_ItemCostByProgress",   // modify_item_cost_by_progression_tag
+  67: "UNK_MarketPriceMult",      // "MARKET CRASH" Due to the risk of Famine, the market is concerned and prices have gone up 100%.
+  68: "UNK_ItemCostByProgress",   // modify_item_cost_by_progression_tag
   69: "game_ReinforceAmount",     // changes the number of starting reinforcements per squad member
   70: "map_PlanetBody",           // replaces the actual planet graphic // Value1: [GalaxyEventType]
   71: "map_PlanetToken",          // gives planet a token + description, sometimes places a pawn // Value1: [RawId32] 
