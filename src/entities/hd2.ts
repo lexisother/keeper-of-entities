@@ -65,9 +65,6 @@ class HD2TrackerEntity extends WatcherEntity {
     this.warId = data.warId;
     this.colour = data.colour;
 
-    this.module.configureBaseUrl(this.baseUrl);
-    this.module.configureWarId(this.warId);
-
     this.data = {
       effects: data.effects ?? [],
       gameClient: data.gameClient ?? { featureConfiguration: [], onlineOverrideConfiguration: [] },
@@ -83,7 +80,7 @@ class HD2TrackerEntity extends WatcherEntity {
     };
 
     for (const [type, method] of Object.entries(methods)) {
-      let res = JSON.parse(await method());
+      let res = JSON.parse(await method(this.baseUrl, this.warId));
 
       switch (type) {
         case "effects": {

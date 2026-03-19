@@ -3,12 +3,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface WASMModule {
-  configureBaseUrl(url: string): void;
-  configureWarId(id: string): void;
-
-  fetchEffects(): Promise<string>;
-  fetchStatus(): Promise<string>;
-  fetchGameClient(): Promise<string>;
+  fetchEffects(baseUrl: string, warId: string): Promise<string>;
+  fetchStatus(baseUrl: string, warId: string): Promise<string>;
+  fetchGameClient(baseUrl: string, warId: string): Promise<string>;
 }
 
 const __self = dirname(fileURLToPath(import.meta.url));
