@@ -80,9 +80,9 @@ export const def_effect_types: Record<number, string> = {
   70: "map_PlanetBody",           // replaces the actual planet graphic // Value1: [GalaxyEventType]
   71: "map_PlanetToken",          // gives planet a token + description, sometimes places a pawn // Value1: [RawId32] 
   72: "game_EnemySpawnWeight",    // enemy_spawn_weight // Value1: [RawId] - Value2: Percentage[Spawn_Weight]
-  73: "map_PlanetCloud",          // // Value1: percentage of gloom radius, Value2: percentage of intensity
-  74: "war_RegenRelativePct",     // // Value1: Modifies the planet's regen by a percentage of its default regen
-  75: "game_MissionIdOverride",   // // Value1: RawIdString32 - mission id, Value 2 - boolean
+  73: "map_PlanetCloud",          // Value1: percentage of gloom radius, Value2: percentage of intensity
+  74: "war_RegenRelativePct",     // Value1: Modifies the planet's regen by a percentage of its default regen
+  75: "game_MissionIdOverride",   // Value1: RawIdString32 - mission id, Value 2 - boolean
   76: "map_PlanetHide",           // hides planet from the map
   77: "war_RegenOverride",        // overrides a planet's HP regen // Value1: [FixedValue] + or -
   78: "game_GameplayGeneric",     // ??? gameplay_generic
@@ -101,7 +101,8 @@ export const def_effect_types: Record<number, string> = {
   91: "game_StratGroupCooldown",  // mission_helldiver_stratagem_group_cooldown_modified
   92: "war_Demilitarized",        // prevents attacks against this planet
   93: "game_OperationModToggle",  // game_operation_modifier_toggle
-  94: "game_ModifierEffect"       // applies modifiers from generated_modifier_settings
+  94: "game_ModifierEffect",      // applies modifiers from generated_modifier_settings
+  95: "UNK_OperationIdOverride"   // Value1: RawIdString32 - operation id, Value 2 - boolean
 }
 
 // prettier-ignore
