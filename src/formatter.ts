@@ -15,7 +15,7 @@
 
 import * as formatterCore from './formatter/core';
 import {installBasic} from './formatter/lib-basic';
-import {VMContext, installDiscord} from './formatter/lib-discord';
+import {type VMContext, installDiscord} from './formatter/lib-discord';
 
 // This file serves as a wrapper to minimize the used API of the formatter.
 // The formatter itself is customizable for code structure reasons.

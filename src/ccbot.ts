@@ -140,7 +140,7 @@ export abstract class CCBot<Ready extends boolean = boolean> extends commando.Co
 /// *All commands in the project should be based off of this class, directly or indirectly.*
 /// A version of commando.Command with CCBot taking the place of the client field.
 export abstract class CCBotCommand extends commando.Command {
-    public client!: CCBot;
+    declare public client: CCBot;
     public constructor(client: CCBot, options: commando.CommandInfo) {
         super(client, options);
         // Add default throttling options. The source of these might need to be put elsewhere.

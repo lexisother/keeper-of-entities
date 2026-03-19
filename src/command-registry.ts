@@ -23,7 +23,7 @@ import { CCBot } from './ccbot';
 /// JSON commands are read from the 'commands.json' dynamicData file.
 /// Their structure is defined in: data/structures.js
 export default class CCBotCommandRegistry extends commando.CommandoRegistry {
-    public readonly client!: CCBot;
+    declare public readonly client: CCBot;
     private allJSONCommands: commando.Command[];
 
     public constructor(c: CCBot) {

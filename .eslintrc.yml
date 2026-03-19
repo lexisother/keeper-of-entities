@@ -6,7 +6,7 @@ settings:
 
 rules:
     node/no-unsupported-features/es-syntax:
-        - error
+        - off
         - ignores:
               - modules
 

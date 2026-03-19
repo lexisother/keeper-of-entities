@@ -83,7 +83,7 @@ function initCCBotCommandoMessage(
 
 /// A modified version of the CommandDispatcher to apply custom parsing rules and the new CommandoMessage.
 export default class CCBotCommandDispatcher extends commando.CommandDispatcher {
-    public readonly client!: CCBot;
+    declare public readonly client: CCBot;
 
     public constructor(c: CCBot, r: commando.CommandoRegistry) {
         super(c, r);

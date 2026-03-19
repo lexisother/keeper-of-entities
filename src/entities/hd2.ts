@@ -12,6 +12,7 @@ import {
   def_effect_types,
   def_effect_value_types,
 } from "../data/hd2";
+import { WASMModule, module } from "../wasm";
 
 const COLOURS = {
   added: "#2DB610",
@@ -38,6 +39,7 @@ interface HD2TrackerEntityData extends WatcherEntityData {
 }
 
 class HD2TrackerEntity extends WatcherEntity {
+  public module: WASMModule;
   public channel: discord.TextBasedChannel;
   public baseUrl: string;
   public apiType: ApiType;
@@ -53,6 +55,8 @@ class HD2TrackerEntity extends WatcherEntity {
   ) {
     super(c, `hd2-tracker-${id}`, data);
 
+    this.module = module;
+
     this.channel = channel;
     this.baseUrl = data.baseUrl.endsWith("/")
       ? data.baseUrl.slice(0, -1)
@@ -60,6 +64,9 @@ class HD2TrackerEntity extends WatcherEntity {
     this.apiType = data.apiType;
     this.warId = data.warId;
     this.colour = data.colour;
+
+    this.module.configureBaseUrl(this.baseUrl);
+    this.module.configureWarId(this.warId);
 
     this.data = {
       effects: data.effects ?? [],
@@ -69,12 +76,14 @@ class HD2TrackerEntity extends WatcherEntity {
   }
 
   public async watcherTick(): Promise<void> {
-    const urls = this.apiUrls();
-    for (const type of Object.keys(urls)) {
-      let res = await getJSON(urls[type](this.warId), {
-        "User-Agent":
-          "Keeper Discord Bot (https://github.com/lexisother/ccbot-custom/blob/master/src/entities/hd2.ts)",
-      });
+    const methods = {
+      effects: module.fetchEffects,
+      status: module.fetchStatus,
+      gameClient: module.fetchGameClient
+    };
+
+    for (const [type, method] of Object.entries(methods)) {
+      let res = JSON.parse(await method());
 
       switch (type) {
         case "effects": {
@@ -320,13 +329,13 @@ class HD2TrackerEntity extends WatcherEntity {
     return embed;
   }
 
-  private apiUrls(): Record<string, (warId: string) => string> {
-    return {
-      effects: () => `${this.baseUrl}/api/WarSeason/GalacticWarEffects`,
-      status: (warId) => `${this.baseUrl}/api/WarSeason/${warId}/Status`,
-      gameClient: () => `${this.baseUrl}/api/Configuration/GameClient`,
-    };
-  }
+  // private apiUrls(): Record<string, (warId: string) => string> {
+  //   return {
+  //     effects: () => `${this.baseUrl}/api/WarSeason/GalacticWarEffects`,
+  //     status: (warId) => `${this.baseUrl}/api/WarSeason/${warId}/Status`,
+  //     gameClient: () => `${this.baseUrl}/api/Configuration/GameClient`,
+  //   };
+  // }
 }
 
 export default async function load(

@@ -1,8 +1,8 @@
 ## build runner
-FROM node:20.15.1-alpine AS build-runner
+FROM node:24.14.0-alpine AS build-runner
 
 # Add git and gyp deps
-RUN apk add git g++ make py3-pip
+RUN apk add git wget tar g++ make py3-pip
 
 # Set temp directory
 WORKDIR /tmp/app
@@ -18,13 +18,20 @@ RUN pnpm install
 
 # Move source files
 COPY src ./src
-COPY tsconfig.json   .
+COPY rolldown.config.ts .
+COPY tsconfig.json .
 
 # Build project
 RUN pnpm run build
 
-## producation runner
-FROM node:20.15.1-alpine AS prod-runner
+# If a WASM bundle was specified, download and extract it
+COPY wasm.tar.gz* .
+RUN if [ -f wasm.tar.gz ]; then \
+  tar -xvzf wasm.tar.gz -C dist; \
+fi
+
+## production runner
+FROM node:24.14.0-alpine AS prod-runner
 
 # Add git and gyp deps
 RUN apk add git g++ make py3-pip
@@ -42,6 +49,7 @@ RUN pnpm install --only=production
 
 # Move build files
 COPY --from=build-runner /tmp/app/dist /app/dist
+# COPY --from=golang:1.26.0 /usr/local/go/lib/wasm/wasm_exec.js /app/dist/wasm_exec.js
 COPY --from=build-runner /tmp/app/dynamic-data /app/dynamic-data-template
 
 # Start bot
