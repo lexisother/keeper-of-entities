@@ -82,6 +82,8 @@ class HD2TrackerEntity extends WatcherEntity {
     for (const [type, method] of Object.entries(methods)) {
       let res = JSON.parse(await method(this.baseUrl, this.warId));
 
+      console.log(`successful fetch of ${type} for ${this.baseUrl}`)
+
       switch (type) {
         case "effects": {
           this.handleEffects(res as APIGalacticWarEffect[]);
