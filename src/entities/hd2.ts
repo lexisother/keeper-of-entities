@@ -82,7 +82,7 @@ class HD2TrackerEntity extends WatcherEntity {
     for (const [type, method] of Object.entries(methods)) {
       let res: unknown;
       try {
-        res = await method();
+        res = JSON.parse(await method());
       } catch(e) {
         console.error(`ERROR: ${type} request for ${this.baseUrl} failed!\n`, e);
         continue;
