@@ -1,6 +1,6 @@
 import * as discord from "discord.js";
 import { CCBot, CCBotEntity } from "../ccbot";
-import { diffArrays, formatEmptyString, getJSON } from "../utils";
+import { diffArrays, formatEmptyString } from "../utils";
 import { WatcherEntity, WatcherEntityData } from "../watchers";
 import {
   APIGalacticWarEffect,
@@ -12,7 +12,7 @@ import {
   def_effect_types,
   def_effect_value_types,
 } from "../data/hd2";
-import { WASMModule, module } from "../wasm";
+import { IHDClient, module } from "../ext";
 
 const COLOURS = {
   added: "#2DB610",
@@ -39,7 +39,7 @@ interface HD2TrackerEntityData extends WatcherEntityData {
 }
 
 class HD2TrackerEntity extends WatcherEntity {
-  public module: WASMModule;
+  public hdClient: IHDClient;
   public channel: discord.TextBasedChannel;
   public baseUrl: string;
   public apiType: ApiType;
@@ -55,8 +55,6 @@ class HD2TrackerEntity extends WatcherEntity {
   ) {
     super(c, `hd2-tracker-${id}`, data);
 
-    this.module = module;
-
     this.channel = channel;
     this.baseUrl = data.baseUrl.endsWith("/")
       ? data.baseUrl.slice(0, -1)
@@ -64,6 +62,8 @@ class HD2TrackerEntity extends WatcherEntity {
     this.apiType = data.apiType;
     this.warId = data.warId;
     this.colour = data.colour;
+
+    this.hdClient = new module.HDClient(this.baseUrl, this.warId);
 
     this.data = {
       effects: data.effects ?? [],
@@ -74,15 +74,19 @@ class HD2TrackerEntity extends WatcherEntity {
 
   public async watcherTick(): Promise<void> {
     const methods = {
-      effects: module.fetchEffects,
-      status: module.fetchStatus,
-      gameClient: module.fetchGameClient
+      effects: this.hdClient.fetchEffects.bind(this.hdClient),
+      status: this.hdClient.fetchStatus.bind(this.hdClient),
+      gameClient: this.hdClient.fetchGameClient.bind(this.hdClient)
     };
 
     for (const [type, method] of Object.entries(methods)) {
-      let res = JSON.parse(await method(this.baseUrl, this.warId));
-
-      console.log(`successful fetch of ${type} for ${this.baseUrl}`)
+      let res: unknown;
+      try {
+        res = await method();
+      } catch(e) {
+        console.error(`ERROR: ${type} request for ${this.baseUrl} failed!\n`, e);
+        continue;
+      }
 
       switch (type) {
         case "effects": {

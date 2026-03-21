@@ -1,5 +1,5 @@
 export default {
   deps: {
-    neverBundle: './keeper-wasm.mjs',
+    neverBundle: './keeper-ext.mjs',
   },
 };

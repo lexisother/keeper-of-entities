@@ -24,10 +24,10 @@ COPY tsconfig.json .
 # Build project
 RUN pnpm run build
 
-# If a WASM bundle was specified, download and extract it
-COPY wasm.tar.gz* .
-RUN if [ -f wasm.tar.gz ]; then \
-  tar -xvzf wasm.tar.gz -C dist; \
+# If a ext bundle was specified, download and extract it
+COPY ext.tar.gz* .
+RUN if [ -f ext.tar.gz ]; then \
+  tar -xvzf ext.tar.gz -C dist; \
 fi
 
 ## production runner
@@ -49,7 +49,6 @@ RUN pnpm install --only=production
 
 # Move build files
 COPY --from=build-runner /tmp/app/dist /app/dist
-# COPY --from=golang:1.26.0 /usr/local/go/lib/wasm/wasm_exec.js /app/dist/wasm_exec.js
 COPY --from=build-runner /tmp/app/dynamic-data /app/dynamic-data-template
 
 # Start bot

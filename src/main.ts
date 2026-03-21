@@ -20,7 +20,7 @@ import CCBotImpl from './ccbot-impl';
 import {Secrets} from './data/structures'
 import * as fs from 'fs';
 import * as net from 'net';
-import { initializeWasm } from './wasm';
+import { initializeExt } from './ext';
 
 declare global {
     // Using var declarations is the only way to get away from weird hacks.
@@ -61,7 +61,7 @@ class CCBotMain {
 
         const kickstart = async (): Promise<void> => {
             try {
-                await initializeWasm();
+                await initializeExt();
                 // Makes sure that data isn't corrupt, makes sure that data is available
                 await this.client.loadData();
                 // Ok, *now* login

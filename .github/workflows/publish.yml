@@ -29,8 +29,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download WASM module
-        run: wget -q -O wasm.tar.gz "${{ secrets.WASM_URL }}"
+      - name: Download extension module
+        run: wget -q -O ext.tar.gz "${{ secrets.EXT_URL }}"
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer

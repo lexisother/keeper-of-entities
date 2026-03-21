@@ -28,7 +28,7 @@ import loadAocViewer from './entities/aoc';
 import loadMntTracker from './entities/mnt';
 import loadHd2Tracker from './entities/hd2';
 import {CCBot} from './ccbot';
-import { supportsWasm } from './wasm';
+import { supportsExt } from './ext';
 
 /// Registers all the entities. (More or less.)
 export default function registerAllEntities(cr: CCBot): void {
@@ -49,6 +49,6 @@ export default function registerAllEntities(cr: CCBot): void {
         .registerEntityType('aoc-viewer', loadAocViewer)
         .registerEntityType('mnt-tracker', loadMntTracker);
 
-    if (supportsWasm())
+    if (supportsExt())
         cr.entities.registerEntityType('hd2-tracker', loadHd2Tracker);
 }
