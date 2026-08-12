@@ -13,7 +13,7 @@ COPY pnpm-lock.yaml .
 COPY dynamic-data ./dynamic-data
 
 # Install dependencies
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.28.1
 RUN pnpm install
 
 # Move source files
