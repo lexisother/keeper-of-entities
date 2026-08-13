@@ -8,8 +8,7 @@ RUN apk add git wget tar g++ make py3-pip
 WORKDIR /tmp/app
 
 # Move package.json
-COPY package.json .
-COPY pnpm-lock.yaml .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .
 COPY dynamic-data ./dynamic-data
 
 # Install dependencies
@@ -42,6 +41,7 @@ WORKDIR /app
 # Copy package.json from build-runner
 COPY --from=build-runner /tmp/app/package.json /app/package.json
 COPY --from=build-runner /tmp/app/pnpm-lock.yaml /app/pnpm-lock.yaml
+COPY --from=build-runner /tmp/app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
 
 # Install dependencies
 RUN npm install -g pnpm
