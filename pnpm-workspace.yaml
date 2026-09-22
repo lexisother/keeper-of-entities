@@ -1,5 +1,5 @@
-onlyBuiltDependencies:
-  - better-sqlite3
-  - bufferutil
-  - utf-8-validate
-  - zlib-sync
+allowBuilds:
+  better-sqlite3: false
+  bufferutil: true
+  utf-8-validate: true
+  zlib-sync: false

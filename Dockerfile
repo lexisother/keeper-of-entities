@@ -1,55 +1,35 @@
-## build runner
-FROM node:24.14.0-alpine AS build-runner
-
-# Add git and gyp deps
-RUN apk add git wget tar g++ make py3-pip
-
-# Set temp directory
-WORKDIR /tmp/app
-
-# Move package.json
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .
-COPY dynamic-data ./dynamic-data
-
-# Install dependencies
-RUN npm install -g pnpm@10.28.1
-RUN pnpm install
-
-# Move source files
-COPY src ./src
-COPY rolldown.config.ts .
-COPY tsconfig.json .
-
-# Build project
-RUN pnpm run build
-
-# If a ext bundle was specified, download and extract it
-COPY ext.tar.gz* .
-RUN if [ -f ext.tar.gz ]; then \
-  tar -xvzf ext.tar.gz -C dist; \
-fi
-
-## production runner
-FROM node:24.14.0-alpine AS prod-runner
-
-# Add git and gyp deps
-RUN apk add git g++ make py3-pip
-
-# Set work directory
+# I am choosing to use Vite+ here JUST because it has a very convenient method
+# to provide a portable Node.js binary to later steps.
+# Don't ask why I'm doing it like that. Just trust.
+FROM ghcr.io/voidzero-dev/vite-plus:1.0.0-rc.0 AS build
 WORKDIR /app
+ENV CI=true
 
-# Copy package.json from build-runner
-COPY --from=build-runner /tmp/app/package.json /app/package.json
-COPY --from=build-runner /tmp/app/pnpm-lock.yaml /app/pnpm-lock.yaml
-COPY --from=build-runner /tmp/app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
+COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN vp i --frozen-lockfile
 
-# Install dependencies
-RUN npm install -g pnpm
-RUN pnpm install --only=production
+COPY --chown=vp:vp . .
+RUN vp run build
 
-# Move build files
-COPY --from=build-runner /tmp/app/dist /app/dist
-COPY --from=build-runner /tmp/app/dynamic-data /app/dynamic-data-template
+RUN cp "$(vp env which node | head -1)" /tmp/node
 
-# Start bot
-CMD [ "cp", "-r", "dynamic-data-template", "dynamic-data", "&&", "node", "dist/main.js" ]
+FROM node:24.14.0-alpine AS deps
+WORKDIR /app
+ENV CI=true
+
+RUN apk add git wget tar g++ make py3-pip
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm i --frozen-lockfile --prod
+
+FROM debian:bookworm-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=build /tmp/node /usr/local/bin/node
+COPY --from=deps /app ./
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/dynamic-data ./dynamic-data-template
+
+CMD cp -r dynamic-data-template dynamic-data && node dist/main.mjs
