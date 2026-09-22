@@ -102,7 +102,9 @@ export const def_effect_types: Record<number, string> = {
   92: "war_Demilitarized",        // prevents attacks against this planet
   93: "game_OperationModToggle",  // game_operation_modifier_toggle
   94: "game_ModifierEffect",      // applies modifiers from generated_modifier_settings
-  95: "UNK_OperationIdOverride"   // Value1: RawIdString32 - operation id, Value 2 - boolean
+  95: "game_OperationIdOverride", // Value1: RawIdString32 - operation id, Value 2 - boolean
+  96: "war_AddOperationTag",      // [vt_resourceHash, vt_None]
+  97: "map_SideboardID",          // [vt_resourceHash, vt_None]
 }
 
 // prettier-ignore
