@@ -11,6 +11,11 @@ RUN vp i --frozen-lockfile
 COPY --chown=vp:vp . .
 RUN vp run build
 
+COPY --chown=vp:vp ext.tar.gz* .
+RUN if [ -f ext.tar.gz ]; then \
+  tar -xvzf ext.tar.gz -C dist; \
+fi
+
 RUN cp "$(vp env which node | head -1)" /tmp/node
 
 FROM node:24.14.0-alpine AS deps
