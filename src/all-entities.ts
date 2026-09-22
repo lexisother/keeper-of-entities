@@ -27,6 +27,7 @@ import {loadPluginDatabase, loadQuicklinks} from './entities/vd-plugins';
 import loadAocViewer from './entities/aoc';
 import loadMntTracker from './entities/mnt';
 import loadHd2Tracker from './entities/hd2';
+import loadGitHubReleases from './entities/github-releases';
 import {CCBot} from './ccbot';
 import { supportsExt } from './ext';
 
@@ -47,7 +48,8 @@ export default function registerAllEntities(cr: CCBot): void {
         .registerEntityType('plugin-database', loadPluginDatabase)
         .registerEntityType('plugin-quicklinks', loadQuicklinks)
         .registerEntityType('aoc-viewer', loadAocViewer)
-        .registerEntityType('mnt-tracker', loadMntTracker);
+        .registerEntityType('mnt-tracker', loadMntTracker)
+        .registerEntityType('github-releases', loadGitHubReleases);
 
     if (supportsExt())
         cr.entities.registerEntityType('hd2-tracker', loadHd2Tracker);

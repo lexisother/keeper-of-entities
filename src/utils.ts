@@ -226,7 +226,7 @@ export function checkIntegerResult(a: number): void {
 
 /// Retrieves a JSON file from the 'web
 /// NOTE: headers is modified for added spice.
-export function getJSON<T>(endpoint: string, headers: Record<string, string>): Promise<T> {
+export function getJSON<T>(endpoint: string, headers: Record<string, string> = {}): Promise<T> {
     // Older versions of Node don't do the "automatic parsing of URLs" thing if an object is passed
     // Rest of the bot works fine so might as well put this here
     const endpointURL = new url.URL(endpoint);
